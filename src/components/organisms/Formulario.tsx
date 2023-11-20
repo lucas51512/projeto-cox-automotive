@@ -5,7 +5,7 @@ import { useViaCepContext } from "../../hooks/context/ViaCepContext";
 
 export default function Formulario() {
 
-    const { cepData, loading, error, fetchCepData } = useViaCepContext(); 
+    // const { cepData, loading, error, fetchCepData } = useViaCepContext(); 
 
   return (
     <Flex justify="center">
