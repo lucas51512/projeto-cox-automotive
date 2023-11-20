@@ -5,7 +5,7 @@ interface ViaCepContextProps {
     cepData: any;
     loading: boolean;
     error: string | null;
-    fetchCepData: (cep: string) => Promise<void>;
+    fetchCepData: (cep: string) => Promise<any>;
 }
 
 const ViaCepContext = createContext<ViaCepContextProps | undefined>(undefined);
@@ -31,16 +31,18 @@ export default function ViaCepProvider({children}: ViaCepProviderProps) {
 
     const fetchCepData = async (cep: string) => {
         try {
-            setLoading(true);
-            const endereco = await cepService.getEndereco(cep);
-            setCepData(await endereco.json());
-            setError(null);
+          setLoading(true);
+          const endereco = await cepService.getEndereco(cep);
+          const data = await endereco;
+          setCepData(data);
         } catch (error) {
-            setError(`Erro ao obter o Cep ${error}`);
+          console.error("Erro ao obter o Cep:", error);
+          setError(`Erro ao obter o Cep ${error}`);
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
-    };
+      };
+      
 
     const contextValue: ViaCepContextProps = {
         cepData,
@@ -48,6 +50,8 @@ export default function ViaCepProvider({children}: ViaCepProviderProps) {
         error,
         fetchCepData,
     };
+
+    console.log("CEP no ViaCepContext:", cepData);
 
     return <ViaCepContext.Provider value={contextValue}>{children}</ViaCepContext.Provider>;
 }

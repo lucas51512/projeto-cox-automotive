@@ -1,14 +1,29 @@
+import React from 'react';
 import { Select } from "@chakra-ui/react";
 import { useEstadosContext } from "../../hooks/context/EstadosContext";
 
-export default function DropdownEstados() {
-    const { estados } = useEstadosContext();
+interface DropdownEstadosProps {
+  estadoSelecionado: string;
+  onEstadoChange: (novoEstado: string) => void;
+}
+
+export default function DropdownEstados({ estadoSelecionado, onEstadoChange }: DropdownEstadosProps) {
+  const { estados } = useEstadosContext();
+
+  const handleEstadoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const novoEstado = event.target.value;
+    onEstadoChange(novoEstado);
+  };
 
   return (
-    <Select placeholder="Selecione o Estado">
+    <Select
+      placeholder="Selecione o Estado"
+      value={estadoSelecionado}
+      onChange={handleEstadoChange}
+    >
       {estados.map((estado) => (
         <option key={estado} value={estado}>
-            {estado}
+          {estado}
         </option>
       ))}
     </Select>
