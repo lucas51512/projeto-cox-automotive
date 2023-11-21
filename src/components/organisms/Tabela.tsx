@@ -9,8 +9,29 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import Caixa from "../atoms/Caixa";
+import { DadosFormulario } from "../atoms/interfaces/DadosFormulario";
+import PessoaService from "../../services/PessoaService/PessoaService";
 export default function Tabela() {
+  const [pessoas, setPessoas] = useState<DadosFormulario[]>([]);
+
+  const pessoaService = new PessoaService();
+
+  useEffect(() => {
+    async function buscarPessoas() {
+      try {
+        await pessoaService.getAllPessoas().then((pessoas) =>
+          setPessoas(pessoas)
+        );
+      } catch (error) {
+        console.error("Erro ao obter as reuniões", error);
+      }
+    }
+
+    buscarPessoas();
+  }, []);
+
   return (
     <Flex justify="center">
       <Caixa w="50%" justify="center">
@@ -25,11 +46,13 @@ export default function Tabela() {
               </Tr>
             </Thead>
             <Tbody>
-              <Tr>
-                <Td>Guilherme Brancalhão</Td>
-                <Td>19806270</Td>
-                <Td>Sim</Td>
-              </Tr>
+            {pessoas.map((pessoa, index) => (
+                <Tr key={index}>
+                  <Td>{pessoa.nomeCompleto}</Td>
+                  <Td>{pessoa.cep}</Td>
+                  <Td>{pessoa.novoEndereco ? "Sim" : "Não"}</Td>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         </TableContainer>

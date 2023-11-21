@@ -35,39 +35,36 @@ export default function Formulario() {
   const schema = yup.object().shape({
     nomeCompleto: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
-    apelido: yup.string().matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
+    apelido: yup.string().matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     cep: yup
-      .string()
-      .transform((value, originalValue) =>
-        originalValue ? originalValue.replace(/\D/g, "") : value
-      )
+      .string().required("Obrigatório")
       .matches(/^\d{5}-\d{3}$/, "CEP inválido"),
     cidade: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     logradouro: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     bairro: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     estado: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     numero: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     complemento: yup
       .string()
-      .required()
-      .matches(/^[a-zA-Z0-9]+$/, "Deve ser alfanumérico"),
+      .required("Obrigatório")
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
     novoEndereco: yup.boolean().required(),
   });
 
@@ -113,7 +110,15 @@ export default function Formulario() {
       }
     }
     cadastrarPessoa(data);
-    reset();
+    reset({
+        nomeCompleto: "",
+        apelido: "",
+        estado: "Selecione o Estado",
+        cidade: "",
+        bairro: "",
+        numero: "",
+        complemento: ""
+      });
   };
 
   const preencherComCep = () => {
@@ -162,7 +167,7 @@ export default function Formulario() {
                 {errors.nomeCompleto && <Text color='red'>{errors.nomeCompleto.message}</Text>}
                 <FormLabel>Apelido</FormLabel>
                 <Input
-                  {...register("apelido", { required: true })}
+                  {...register("apelido")}
                   type="text"
                   value={valoresFormulario.apelido}
                   onChange={(e) =>

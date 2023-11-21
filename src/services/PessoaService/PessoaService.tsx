@@ -7,7 +7,7 @@ export default class PessoaService {
     return response.data;
   };
 
-  getAllLocais = async () => {
+  getAllPessoas = async () => {
     const response = await api.get("/pessoa");
     return response.data;
   };
