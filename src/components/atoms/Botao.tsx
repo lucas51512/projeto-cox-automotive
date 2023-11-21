@@ -11,6 +11,6 @@ interface BotaoProps {
 
 export default function Botao({tituloBotao, corBotao, corTexto, mx, type, onClick}: BotaoProps) {
     return(
-        <Button color={corTexto} mx={mx} bgColor={corBotao} type={type ? "submit": 'button'} onClick={onClick}>{tituloBotao}</Button>
+        <Button color={corTexto} mx={mx} bgColor={corBotao} type={type ? 'submit': 'button'} onClick={onClick}>{tituloBotao}</Button>
     );
 }

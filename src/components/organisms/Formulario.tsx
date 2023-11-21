@@ -1,46 +1,36 @@
 import {
+  Button,
   Flex,
   FormControl,
   FormLabel,
   Input,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import Caixa from "../atoms/Caixa";
 import DropdownEstados from "../molecules/DropdownEstados";
 import { useViaCepContext } from "../../hooks/context/ViaCepContext";
-import { useForm, SubmitHandler } from "react-hook-form";
 import { useEffect, useState } from "react";
 import Botao from "../atoms/Botao";
-import { DadosFormulario } from "../atoms/interfaces/DadosFormulario";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
 import PessoaService from "../../services/PessoaService/PessoaService";
+import { useFormik } from "formik";
 
 export default function Formulario() {
   const { cepData, loading, error, fetchCepData } = useViaCepContext();
   const [estadoSelecionado, setEstadoSelecionado] = useState("");
-  const [valoresFormulario, setValoresFormulario] = useState({
-    nomeCompleto: "",
-    apelido: "",
-    cep: "",
-    cidade: "",
-    logradouro: "",
-    bairro: "",
-    estado: "",
-    numero: "",
-    complemento: "",
-    novoEndereco: false,
-  });
+  const pessoaService = new PessoaService();
+  const toast = useToast();
 
-  const schema = yup.object().shape({
+  const schema = yup.object({
     nomeCompleto: yup
       .string()
       .required("Obrigatório")
       .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
-    apelido: yup.string().matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
-    cep: yup
-      .string().required("Obrigatório")
-      .matches(/^\d{5}-\d{3}$/, "CEP inválido"),
+    apelido: yup
+      .string()
+      .matches(/^[a-zA-Z0-9À-ÿ\s]+$/, "Deve ser alfanumérico"),
+    cep: yup.string().required(),
     cidade: yup
       .string()
       .required("Obrigatório")
@@ -68,69 +58,47 @@ export default function Formulario() {
     novoEndereco: yup.boolean().required(),
   });
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
-    mode: "onSubmit",
-    resolver: yupResolver(schema),
-  });
-
-  const pessoaService = new PessoaService();
-
-  const cadastrarPessoa = (novaPessoa: DadosFormulario) => {
-    pessoaService
-      .createPessoa(novaPessoa)
-      .then(() => {
-        console.log(novaPessoa, "cadastrado com sucesso");
-      })
-      .catch((error) => {
-        console.log(error, "cadastro não realizado");
-      });
-  };
-
-  const onSubmit: SubmitHandler<DadosFormulario> = async (
-    data: DadosFormulario
-  ) => {
-    if (data.novoEndereco) {
-      console.log("Cadastrar novo endereço manualmente:", data);
-    } else {
-      console.log("Cadastrar pessoa com CEP existente:", data);
-      data.cep
-        ? await fetchCepData(data.cep)
-        : console.log("Cadastre manualmente");
-      if (!loading && !error && !cepData) {
-        setValoresFormulario((valoresAnteriores) => ({
-          ...valoresAnteriores,
-          novoEndereco: true,
-        }));
-        
+  const formik = useFormik({
+    initialValues: {
+      nomeCompleto: "",
+      apelido: "",
+      cep: "",
+      cidade: "",
+      logradouro: "",
+      bairro: "",
+      estado: "",
+      numero: "",
+      complemento: "",
+      novoEndereco: false,
+    },
+    validationSchema: schema,
+    onSubmit: async (values) => {
+      try {
+        await pessoaService.createPessoa(values);
+        toast({
+          title: `Pessoa ${values.nomeCompleto} cadastrada com Sucesso!`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+        formik.resetForm();
+      } catch (error) {
+        console.log("Erro ao cadastrar a pessoa", error);
       }
-    }
-    cadastrarPessoa(data);
-    reset({
-        nomeCompleto: "",
-        apelido: "",
-        estado: "Selecione o Estado",
-        cidade: "",
-        bairro: "",
-        numero: "",
-        complemento: ""
-      });
-  };
+    },
+  });
 
   const preencherComCep = () => {
     if (cepData) {
       setEstadoSelecionado(cepData.uf);
-      setValoresFormulario((valoresAnteriores) => ({
-        ...valoresAnteriores,
-        estado: estadoSelecionado,
+      formik.setValues({
+        ...formik.values,
+        cep: cepData.cep,
+        estado: cepData.uf,
         cidade: cepData.localidade,
         logradouro: cepData.logradouro,
         bairro: cepData.bairro,
-      }));
+      });
     }
   };
 
@@ -140,6 +108,7 @@ export default function Formulario() {
 
   const handleEstadoChange = (novoEstado: string) => {
     setEstadoSelecionado(novoEstado);
+    formik.setFieldValue("estado", novoEstado);
   };
 
   return (
@@ -150,131 +119,129 @@ export default function Formulario() {
             <Flex justify="center">
               <Text fontSize="2xl">Cadastro de Pessoa</Text>
             </Flex>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <FormControl>
+            <form onSubmit={formik.handleSubmit} noValidate>
+              <FormControl isInvalid={!!(formik.touched.nomeCompleto && formik.errors.nomeCompleto)}>
                 <FormLabel>Nome</FormLabel>
                 <Input
-                  {...register("nomeCompleto", { required: true })}
+                  {...formik.getFieldProps("nomeCompleto")}
                   type="text"
-                  value={valoresFormulario.nomeCompleto}
                   onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      nomeCompleto: e.target.value,
-                    })
+                    formik.setFieldValue("nomeCompleto", e.target.value)
                   }
                 />
-                {errors.nomeCompleto && <Text color='red'>{errors.nomeCompleto.message}</Text>}
+                {formik.touched.nomeCompleto && formik.errors.nomeCompleto && (
+                  <Text color="red">{formik.errors.nomeCompleto}</Text>
+                )}
+              </FormControl>
+              <FormControl isInvalid={!!(formik.touched.apelido && formik.errors.apelido)}>
                 <FormLabel>Apelido</FormLabel>
                 <Input
-                  {...register("apelido")}
+                  {...formik.getFieldProps("apelido")}
                   type="text"
-                  value={valoresFormulario.apelido}
                   onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      apelido: e.target.value,
-                    })
+                    formik.setFieldValue("apelido", e.target.value)
                   }
                 />
-                {errors.apelido && <Text color='red'>{errors.apelido.message}</Text>}
+                {formik.touched.apelido && formik.errors.apelido && (
+                  <Text color="red">{formik.errors.apelido}</Text>
+                )}
+              </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.cep && formik.errors.cep)}>
                 <FormLabel>CEP</FormLabel>
                 <Input
-                  {...register("cep", { required: true })}
+                  {...formik.getFieldProps("cep")}
                   type="text"
-                  value={valoresFormulario.cep}
                   onBlur={(e) => {
                     fetchCepData(e.target.value);
                   }}
-                  onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      cep: e.target.value,
-                    })
-                  }
+                  onChange={(e) => formik.setFieldValue("cep", e.target.value)}
                 />
-                {errors.cep && <Text color='red'>{errors.cep.message}</Text>}
+                {formik.touched.cep && formik.errors.cep && (
+                  <Text color="red">{formik.errors.cep}</Text>
+                )}
+              </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.estado && formik.errors.estado)}>
                 <FormLabel>Estado</FormLabel>
                 <DropdownEstados
-                  {...register("estado", { required: true })}
+                  {...formik.getFieldProps("estado")}
                   estadoSelecionado={estadoSelecionado}
                   onEstadoChange={handleEstadoChange}
                 />
-                {errors.estado && <Text color='red'>{errors.estado.message}</Text>}
-                <FormLabel>Cidade</FormLabel>
-                <Input
-                  {...register("cidade", { required: true })}
-                  type="text"
-                  value={valoresFormulario.cidade}
-                  onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      cidade: e.target.value,
-                    })
-                  }
-                />
-                {errors.cidade && <Text color='red'>{errors.cidade.message}</Text>}
-                <FormLabel>Logradouro</FormLabel>
-                <Input
-                  {...register("logradouro", { required: true })}
-                  type="text"
-                  value={valoresFormulario.logradouro}
-                  onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      logradouro: e.target.value,
-                    })
-                  }
-                />
-                {errors.logradouro && <Text color='red'>{errors.logradouro.message}</Text>}
-                <FormLabel>Bairro</FormLabel>
-                <Input
-                  {...register("bairro", { required: true })}
-                  type="text"
-                  value={valoresFormulario.bairro}
-                  onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      bairro: e.target.value,
-                    })
-                  }
-                />
-                {errors.bairro && <Text color='red'>{errors.bairro.message}</Text>}
-                <FormLabel>Número</FormLabel>
-                <Input
-                  {...register("numero", { required: true })}
-                  type="text"
-                  value={valoresFormulario.numero}
-                  onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      numero: e.target.value,
-                    })
-                  }
-                />
-                {errors.numero && <Text color='red'>{errors.numero.message}</Text>}
-                <FormLabel>Complemento</FormLabel>
-                <Input
-                  {...register("complemento", { required: true })}
-                  type="text"
-                  value={valoresFormulario.complemento}
-                  onChange={(e) =>
-                    setValoresFormulario({
-                      ...valoresFormulario,
-                      complemento: e.target.value,
-                    })
-                  }
-                />
-                {errors.complemento && <Text color='red'>{errors.complemento.message}</Text>}
+                {formik.touched.estado && formik.errors.estado && (
+                  <Text color="red">{formik.errors.estado}</Text>
+                )}
               </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.cidade && formik.errors.cidade)}>
+              <FormLabel>Cidade</FormLabel>
+              <Input
+                {...formik.getFieldProps("cidade")}
+                type="text"
+                onChange={(e) => formik.setFieldValue("cidade", e.target.value)}
+              />
+              {formik.touched.cidade && formik.errors.cidade && (
+                <Text color="red">{formik.errors.cidade}</Text>
+              )}
+              </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.logradouro && formik.errors.logradouro)}>
+              <FormLabel>Logradouro</FormLabel>
+              <Input
+                {...formik.getFieldProps("logradouro")}
+                type="text"
+                onChange={(e) =>
+                  formik.setFieldValue("logradouro", e.target.value)
+                }
+              />
+              {formik.touched.logradouro && formik.errors.logradouro && (
+                <Text color="red">{formik.errors.logradouro}</Text>
+              )}
+              </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.bairro && formik.errors.bairro)}>
+              <FormLabel>Bairro</FormLabel>
+              <Input
+                {...formik.getFieldProps("bairro")}
+                type="text"
+                onChange={(e) => formik.setFieldValue("bairro", e.target.value)}
+              />
+              {formik.touched.bairro && formik.errors.bairro && (
+                <Text color="red">{formik.errors.bairro}</Text>
+              )}
+              </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.numero && formik.errors.numero)}>
+              <FormLabel>Número</FormLabel>
+              <Input
+                {...formik.getFieldProps("numero")}
+                type="text"
+                onChange={(e) => formik.setFieldValue("numero", e.target.value)}
+              />
+              {formik.touched.numero && formik.errors.numero && (
+                <Text color="red">{formik.errors.numero}</Text>
+              )}
+              </FormControl>
+
+              <FormControl isInvalid={!!(formik.touched.complemento && formik.errors.complemento)}>
+              <FormLabel>Complemento</FormLabel>
+              <Input
+                {...formik.getFieldProps("complemento")}
+                type="text"
+                onChange={(e) =>
+                  formik.setFieldValue("complemento", e.target.value)
+                }
+              />
+              {formik.touched.complemento && formik.errors.complemento && (
+                <Text color="red">{formik.errors.complemento}</Text>
+              )}
+              </FormControl>
+
               <Flex mt="3%" justify="center">
-                <Botao
-                  corTexto="#ffffff"
-                  mx="10px"
-                  type={true}
-                  corBotao="#66b4f0"
-                  tituloBotao="Salvar"
-                />
+                <Button mx="10px" type="submit" bgColor="#66b4f0" color="white">
+                  Cadastrar
+                </Button>
                 <Botao
                   corTexto="#ffffff"
                   mx="10px"

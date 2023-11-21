@@ -33,8 +33,7 @@ export default function ViaCepProvider({ children }: ViaCepProviderProps) {
     try {
       setLoading(true);
       const endereco = await cepService.getEndereco(cep);
-      const data = await endereco;
-      setCepData(data);
+      setCepData(endereco);
     } catch (error) {
       console.error("Erro ao obter o Cep:", error);
       setError(`Erro ao obter o Cep ${error}`);
@@ -49,8 +48,6 @@ export default function ViaCepProvider({ children }: ViaCepProviderProps) {
     error,
     fetchCepData,
   };
-
-  console.log("CEP no ViaCepContext:", cepData);
 
   return (
     <ViaCepContext.Provider value={contextValue}>
