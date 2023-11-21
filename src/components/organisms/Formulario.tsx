@@ -282,15 +282,20 @@ export default function Formulario() {
               </FormControl>
 
               <Flex mt="3%" justify="center">
-                <Button mx="10px" type="submit" bgColor="#66b4f0" color="white">
-                  Cadastrar
-                </Button>
+              <Botao
+                  corTexto="#ffffff"
+                  mx="10px"
+                  type={true}
+                  corBotao="#66b4f0"
+                  tituloBotao="Cadastrar"
+                />
                 <Botao
                   corTexto="#ffffff"
                   mx="10px"
                   type={false}
                   corBotao="#c8032e"
                   tituloBotao="Cancelar"
+                  onClick={() => formik.resetForm()}
                 />
               </Flex>
             </form>
