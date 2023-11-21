@@ -88,6 +88,12 @@ export default function Formulario() {
     },
   });
 
+    const mascaraCep = (value: string) => {
+      return value
+        .replace(/\D/g, "") // Remove todos os caracteres não numéricos
+        .replace(/^(\d{5})(\d{1,3})?$/, "$1-$2"); // Adiciona a máscara 99999-999
+    };
+
   const preencherComCep = () => {
     if (cepData) {
       setEstadoSelecionado(cepData.uf);
@@ -166,6 +172,8 @@ export default function Formulario() {
                   {...formik.getFieldProps("cep")}
                   type="text"
                   onBlur={(e) => {
+                    const maskedValue = mascaraCep(e.target.value);
+                    formik.setFieldValue("cep", maskedValue);
                     fetchCepData(e.target.value);
                   }}
                   onChange={(e) => formik.setFieldValue("cep", e.target.value)}
