@@ -17,7 +17,7 @@ import PessoaService from "../../services/PessoaService/PessoaService";
 import { useFormik } from "formik";
 
 export default function Formulario() {
-  const { cepData, loading, error, fetchCepData } = useViaCepContext();
+  const { cepData, fetchCepData } = useViaCepContext();
   const [estadoSelecionado, setEstadoSelecionado] = useState("");
   const pessoaService = new PessoaService();
   const toast = useToast();
@@ -99,6 +99,11 @@ export default function Formulario() {
         logradouro: cepData.logradouro,
         bairro: cepData.bairro,
       });
+    } else {
+      formik.setValues({
+        ...formik.values,
+        novoEndereco: true,
+      });
     }
   };
 
@@ -120,7 +125,11 @@ export default function Formulario() {
               <Text fontSize="2xl">Cadastro de Pessoa</Text>
             </Flex>
             <form onSubmit={formik.handleSubmit} noValidate>
-              <FormControl isInvalid={!!(formik.touched.nomeCompleto && formik.errors.nomeCompleto)}>
+              <FormControl
+                isInvalid={
+                  !!(formik.touched.nomeCompleto && formik.errors.nomeCompleto)
+                }
+              >
                 <FormLabel>Nome</FormLabel>
                 <Input
                   {...formik.getFieldProps("nomeCompleto")}
@@ -133,7 +142,9 @@ export default function Formulario() {
                   <Text color="red">{formik.errors.nomeCompleto}</Text>
                 )}
               </FormControl>
-              <FormControl isInvalid={!!(formik.touched.apelido && formik.errors.apelido)}>
+              <FormControl
+                isInvalid={!!(formik.touched.apelido && formik.errors.apelido)}
+              >
                 <FormLabel>Apelido</FormLabel>
                 <Input
                   {...formik.getFieldProps("apelido")}
@@ -147,7 +158,9 @@ export default function Formulario() {
                 )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.cep && formik.errors.cep)}>
+              <FormControl
+                isInvalid={!!(formik.touched.cep && formik.errors.cep)}
+              >
                 <FormLabel>CEP</FormLabel>
                 <Input
                   {...formik.getFieldProps("cep")}
@@ -162,7 +175,9 @@ export default function Formulario() {
                 )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.estado && formik.errors.estado)}>
+              <FormControl
+                isInvalid={!!(formik.touched.estado && formik.errors.estado)}
+              >
                 <FormLabel>Estado</FormLabel>
                 <DropdownEstados
                   {...formik.getFieldProps("estado")}
@@ -174,68 +189,88 @@ export default function Formulario() {
                 )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.cidade && formik.errors.cidade)}>
-              <FormLabel>Cidade</FormLabel>
-              <Input
-                {...formik.getFieldProps("cidade")}
-                type="text"
-                onChange={(e) => formik.setFieldValue("cidade", e.target.value)}
-              />
-              {formik.touched.cidade && formik.errors.cidade && (
-                <Text color="red">{formik.errors.cidade}</Text>
-              )}
+              <FormControl
+                isInvalid={!!(formik.touched.cidade && formik.errors.cidade)}
+              >
+                <FormLabel>Cidade</FormLabel>
+                <Input
+                  {...formik.getFieldProps("cidade")}
+                  type="text"
+                  onChange={(e) =>
+                    formik.setFieldValue("cidade", e.target.value)
+                  }
+                />
+                {formik.touched.cidade && formik.errors.cidade && (
+                  <Text color="red">{formik.errors.cidade}</Text>
+                )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.logradouro && formik.errors.logradouro)}>
-              <FormLabel>Logradouro</FormLabel>
-              <Input
-                {...formik.getFieldProps("logradouro")}
-                type="text"
-                onChange={(e) =>
-                  formik.setFieldValue("logradouro", e.target.value)
+              <FormControl
+                isInvalid={
+                  !!(formik.touched.logradouro && formik.errors.logradouro)
                 }
-              />
-              {formik.touched.logradouro && formik.errors.logradouro && (
-                <Text color="red">{formik.errors.logradouro}</Text>
-              )}
+              >
+                <FormLabel>Logradouro</FormLabel>
+                <Input
+                  {...formik.getFieldProps("logradouro")}
+                  type="text"
+                  onChange={(e) =>
+                    formik.setFieldValue("logradouro", e.target.value)
+                  }
+                />
+                {formik.touched.logradouro && formik.errors.logradouro && (
+                  <Text color="red">{formik.errors.logradouro}</Text>
+                )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.bairro && formik.errors.bairro)}>
-              <FormLabel>Bairro</FormLabel>
-              <Input
-                {...formik.getFieldProps("bairro")}
-                type="text"
-                onChange={(e) => formik.setFieldValue("bairro", e.target.value)}
-              />
-              {formik.touched.bairro && formik.errors.bairro && (
-                <Text color="red">{formik.errors.bairro}</Text>
-              )}
+              <FormControl
+                isInvalid={!!(formik.touched.bairro && formik.errors.bairro)}
+              >
+                <FormLabel>Bairro</FormLabel>
+                <Input
+                  {...formik.getFieldProps("bairro")}
+                  type="text"
+                  onChange={(e) =>
+                    formik.setFieldValue("bairro", e.target.value)
+                  }
+                />
+                {formik.touched.bairro && formik.errors.bairro && (
+                  <Text color="red">{formik.errors.bairro}</Text>
+                )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.numero && formik.errors.numero)}>
-              <FormLabel>Número</FormLabel>
-              <Input
-                {...formik.getFieldProps("numero")}
-                type="text"
-                onChange={(e) => formik.setFieldValue("numero", e.target.value)}
-              />
-              {formik.touched.numero && formik.errors.numero && (
-                <Text color="red">{formik.errors.numero}</Text>
-              )}
+              <FormControl
+                isInvalid={!!(formik.touched.numero && formik.errors.numero)}
+              >
+                <FormLabel>Número</FormLabel>
+                <Input
+                  {...formik.getFieldProps("numero")}
+                  type="text"
+                  onChange={(e) =>
+                    formik.setFieldValue("numero", e.target.value)
+                  }
+                />
+                {formik.touched.numero && formik.errors.numero && (
+                  <Text color="red">{formik.errors.numero}</Text>
+                )}
               </FormControl>
 
-              <FormControl isInvalid={!!(formik.touched.complemento && formik.errors.complemento)}>
-              <FormLabel>Complemento</FormLabel>
-              <Input
-                {...formik.getFieldProps("complemento")}
-                type="text"
-                onChange={(e) =>
-                  formik.setFieldValue("complemento", e.target.value)
+              <FormControl
+                isInvalid={
+                  !!(formik.touched.complemento && formik.errors.complemento)
                 }
-              />
-              {formik.touched.complemento && formik.errors.complemento && (
-                <Text color="red">{formik.errors.complemento}</Text>
-              )}
+              >
+                <FormLabel>Complemento</FormLabel>
+                <Input
+                  {...formik.getFieldProps("complemento")}
+                  type="text"
+                  onChange={(e) =>
+                    formik.setFieldValue("complemento", e.target.value)
+                  }
+                />
+                {formik.touched.complemento && formik.errors.complemento && (
+                  <Text color="red">{formik.errors.complemento}</Text>
+                )}
               </FormControl>
 
               <Flex mt="3%" justify="center">
